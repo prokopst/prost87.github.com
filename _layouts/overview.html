@@ -1,0 +1,22 @@
+---
+layout: base
+---
+        {% for post in site.posts %}
+            <div class="introduction">
+                <div class="header">
+                    <h1>{{ article.name }}</h1>
+                    <p class="date">{{ article.date }}</p>
+                </div>
+                <div class="perex">
+                    <div>{{ article.perex }}</div>
+                    <div class="read_more"><a href="{% url blog.views.article slug=article.slug %}">
+                        {% if article.language = "czech" %}
+                            Číst dál...
+                        {% else %}
+                            Read more...
+                        {% endif %}
+                    </a></div>
+                </div>
+                <div class="article_content"></div>
+            </div>
+        {% endfor %}
