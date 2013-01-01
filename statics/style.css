@@ -1,0 +1,167 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Palatino", "Palatino Linotype", "Book Antiqua", "Georgia", "Times New Roman", serif;
+    background-color: white;
+}
+
+#top {
+    width: 45em;
+    color: black;
+    text-align: right;
+    margin: auto;
+    margin-top: 2em;
+    position: relative;
+    font-smooth: always;
+    /*font-family: 'PT Serif', serif;*/
+    font-weight: bold;
+}
+
+#top img {
+    vertical-align: bottom;
+}
+
+#image_logo {
+    float: left;
+}
+
+#image_wrapper {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+#clear_both {
+    clear: both;
+}
+
+#menu {
+    text-align: right;
+}
+
+#logo {
+    font-weight: bold;
+    text-align: right;
+    font-size: 2em;
+}
+
+#logo a {
+    text-decoration: none;
+}
+
+#logo a:hover {
+    text-decoration: underline;
+}
+
+a {
+    color: black;
+}
+
+.tags a, .tag a:visited, .tags a:hover {
+    color: black;
+    text-decoration: none;
+}
+
+.tags a:hover {
+    text-decoration: underline;
+}
+
+a.main_link, a.main_link:visited, a.main_link:hover {
+    color: black;
+    text-decoration: none;
+}
+
+a.main_link:hover {
+    text-decoration: underline;
+}
+
+#content {
+    margin: auto;
+    margin-top: 0em;
+    width: 45em;
+    background-color: white;
+    text-align: justify;
+}
+
+.date {
+    /*font-size: 85%;*/
+}
+
+#additional {
+    margin: auto;
+    width: 45em;
+    background-color: white;
+    text-align: justify;
+}
+
+#bottom {
+    margin: auto;
+    width: 30em;
+    text-align: center;
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+
+#bottom_text {
+    font-size: 0.8em;
+}
+
+img#cc_by {
+    float: left;
+    margin-right: 1em;
+}
+
+div.perex {
+    padding-left: 2em;
+    text-align: justify;
+    display: table-cell;
+}
+
+.read_more {
+    text-align: right;
+}
+
+.article_content {
+    clear: both;
+    margin-top: 2em;
+}
+
+.introduction {
+    margin-top: 2em;
+    display: table;
+}
+
+div.header {
+    display: table-cell;
+    text-align: right;
+    min-width: 25%;
+}
+
+div.header h1 {
+    margin-bottom: 0em;
+}
+
+h1, h2, h3 {
+    display: block !important;
+    clear: both !important;
+    color: black;
+    /*font-family: 'PT Serif', serif;*/
+}
+
+h2 {
+    font-size: 1.6em;
+}
+
+h3, h4, h5 {
+    font-size: 1.2em;
+}
+
+.image {
+    text-align: center;
+}
+
+.image img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
