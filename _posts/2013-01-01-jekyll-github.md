@@ -21,7 +21,7 @@ První problém je, že dobrodruh, který se rozhodl pro tuto džungli, musí m�
 
 Dalším open-source projektem, který nutně musel vzniknout, byl vůbec celý prototyp statické stránky, na kterém jsem celou šaškárnu ověřoval. Celé je to takové primitivní a jednoduché:
 
-```bash
+```
 .
 ├── _config.yml
 ├── README.md
