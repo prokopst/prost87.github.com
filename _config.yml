@@ -1,4 +1,0 @@
-pygments: true
-markdown: redcarpet
-paginate: 10
-exclude: ["README.md"]
