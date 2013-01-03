@@ -56,7 +56,7 @@
 <p>První problém je, že dobrodruh, který se rozhodl pro tuto džungli, musí mít Jekyll web v branch X (dejme tomu <code>master</code>) a statickou stránku v branch <code>gh-pages</code>. Případně by šlo stránku generovat přímo do root, <strong>kdyby ovšem jekyll nemazal kompletně všechny soubory</strong> v root před vygenerováním statické stránky. A to včetně <code>.git</code>, které z lokálního repozitáře dělá lokální repozitář. Ha! Tohle naštěstí <a href="https://github.com/mojombo/jekyll/issues/534">bude částečně opraveno</a>. Zpět k řešení s dvěmi větvemi. Nejdříve vygenerovat obsah, pak přepnout branch a obsah dodat do root. Celé je to takové manuální a ošklivé, tak jsem provedl <strong>zářez do open-source pažby</strong> a celé to <a href="https://github.com/prost87/git-publish-pages">zautomatizoval nástrojem git-publish-pages</a>. Až na pár věcí - tou zásadní je tvorba <code>gd-pages</code> branch. Jelikož příkazy git vrací při úspěchu 0 a <a href="http://stackoverflow.com/a/4918002">při neúspěchu nejčastěji 1</a>, ošetřit neexistující branch nemusí být nutně korektním ošetření, protože chyba mohla nastat jiná. A parsovat chybové hlášky je směšné. Takže git kromě sémanticky špatných příkazů (<code>git checkout</code> pro přepnutí větve nebo pro zahození změn v adresáři nebo souboru) ještě vrací 1 při všelijakých různých chybách. <strong><ironie>Ať žije git!</ironie></strong></p>
 
 <p>Dalším open-source projektem, který nutně musel vzniknout, byl vůbec celý prototyp statické stránky, na kterém jsem celou šaškárnu ověřoval. Celé je to takové primitivní a jednoduché:</p>
-<div class="highlight"><pre><code class="text">.
+<div class="highlight"><pre><code class="bash">.
 ├── _config.yml
 ├── README.md
 └── _source
