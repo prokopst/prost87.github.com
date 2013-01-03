@@ -42,6 +42,7 @@ Dalším open-source projektem, který nutně musel vzniknout, byl vůbec celý 
 ```
 
 Tento prototyp k nalezení [tady](http://prost87.github.com/github-pages-jekyll-example), obsahuje:
+
 * github flavored markdown
 * stránkování (pagnation)
 * css (jedno prázdné a druhé pro obarvení kódu)
