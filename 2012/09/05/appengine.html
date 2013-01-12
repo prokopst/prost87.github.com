@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="keywords" content="prost, blog, Stanislav Prokop" />
+        <title>inclouds.cz: AppEgine na localhost a subdomény</title>
+        <link href='http://fonts.googleapis.com/css?family=PT+Serif:700' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="/statics/style.css">
+        <link rel="stylesheet" type="text/css" href="/statics/pygments.css">
+        <link rel="stylesheet" type="text/css" href="/statics/disqus_overload.css">
+    </head>
+    <body>
+        <div id="top">
+            <div id="image_logo">
+                <a href="http://inclouds.cz/"><img src="/statics/clouds.png" /></a>
+            </div>
+            <div id="image_wrapper">
+                <div id="logo">
+                    <a href="http://inclouds.cz">inclouds.cz</a>
+                </div>
+                <div id="menu">
+                    <a class="main_link" href="/">index</a>
+                    &nbsp;
+                    <a class="main_link" href="http://twitter.com/prost87/">twitter</a>
+                    &nbsp;
+                    <a class="main_link" href="http://www.linkedin.com/in/prost87">linkedin</a>
+                </div>
+            </div>
+            <div id="clear_both"></div>
+        </div>
+        <div id="content">
+    <div class="introduction">
+        <div class="header">
+            <h1>AppEgine na localhost a subdomény</h1>
+            <p class="date">2012-09-05</p>
+        </div>
+        <div class="perex">
+            V projektu, na kterém momentálně pracuji, jsem narazil na problém - spustit devel server AppEngine se subdoménami, kde se aplikace rozhoduje na základě subdomény. Zprovoznění není zrovna přímočaré, je nutné nainstalovat a nastavit virtualenv s AppEngine, pohrát si s dnsmasq a povolit pythonu poslouchat na portu 80. O tom všem dále.
+        </div>
+    </div>
+    <div class="article_content">
+        <h2 id="toc_0">Virtualenv</h2>
+
+<p>Virtualenv je nástroj k vytvoření izolovaného Python prostředí, které uživatel může bezpečně demolovat a znečistit svým odpadem. Ještě nedávno AppEngine s virtualenv nespolupracoval tak, jak by si vývojář přál - viz <a href="http://code.google.com/p/googleappengine/issues/detail?id=4339">bug</a>. Dnes již funguje, tak hurá pro něj. Pro vytvoření prostředí stačí pustit příkaz:</p>
+<div class="highlight"><pre><code class="bash">virtualenv --distribute --no-site-packages dev_env
+</code></pre></div>
+<p>Tento příkaz vytvoří adresář &#39;dev<em>env&#39; s čerstvým Python prostředím, budou zde hnít vlastní binárky a vlastní balíky. Volba --distribute místo &#39;easy</em>install&#39; použije &#39;distribute&#39;, o současnému stavu věcí <a href="http://guide.python-distribute.org/introduction.html#current-state-of-packaging">zde</a>. Volba --no-site-packages provede to, že nové prostředí nebude s tím hlavním v operačním systému sdílet balíky.</p>
+
+<p>Já si tato prostředí tvořím v mém &#39;home&#39;. Jmenovitě tam budou minimálně &#39;python&#39;, &#39;easy_install&#39; a &#39;pip&#39;. Mělo by se zjevit něco velmi podobného:</p>
+<div class="highlight"><pre><code class="bash">prost@prost-VirtualBox:~<span class="nv">$ </span>virtualenv --distribute --no-site-packages dev_env
+New python executable in dev_env/bin/python
+Installing distribute...............done.
+Installing pip...............done.
+</code></pre></div>
+<p>Prostředí se aktivuje následovně:</p>
+<div class="highlight"><pre><code class="text">source dev_env/bin/activate
+</code></pre></div>
+<p>Na mém prostředí se prakticky stane toto:</p>
+<div class="highlight"><pre><code class="text">prost@prost-VirtualBox:~$ source dev_env/bin/activate
+(dev_env)prost@prost-VirtualBox:~$ 
+</code></pre></div>
+<p>Příkaz source je standardní věc shellu, spustí v rámci současného shell tento soubor, který si na první pohled pohraje s prompt (na začátek v závorce vrazí název prostředí, užitečné), lehce pohraje s proměnnou PATH (první položkou bude absolutní cesta k &#39;dev_env/bin&#39;) a upraví všechny proměnné prostředí, které se váží k Pythonu. Není v tom žádná magie, stačí se podívat do souboru &#39;activate&#39; a je jasno. Je tam i &#39;activate.csh&#39;, varianta pro atypický (diplomaticky řečeno nepoužívaný) shell &#39;csh&#39; a kdo ví co ještě. Jak je libo.</p>
+
+<h2 id="toc_1">Google App Engine</h2>
+
+<p>Prvním krokem je bezesporu stáhnout &#39;Google Application Engine SDK for Python&#39; <a href="http://code.google.com/appengine/downloads.html#Google_App_Engine_SDK_for_Python">odsud</a>. Poté rozbalit třebas do adresáře &#39;/opt&#39;, jehož účelem je uchovávat takovéto mrchy. Mně v systému srmdí v &#39;/opt/google_appengine&#39;.</p>
+
+<p>Nyní je třeba vecpat adresář &#39;/opt/google<em>appengine&#39; do PATH proměnné prostředí, které vytvořil virtualenv o sekci výše. Stačí na konci souboru &#39;dev</em>env/bin/activate&#39; trošku upravit PATH, a to přidat do ni cestu k appengine. Pro líné vše by mělo stačit:</p>
+<div class="highlight"><pre><code class="bash"><span class="c"># copy &amp; paste lazy dudes</span>
+<span class="nb">echo</span> -e <span class="s1">&#39;PATH=/opt/google_appengine:$PATH\nexport PATH&#39;</span> &gt;&gt; dev_env/bin/activate
+<span class="nb">source </span>dev_env/bin/activate
+</code></pre></div>
+<p>Google Application Engine pro lokální vývoj má hromadu balíků jako webapp2, jinja2, webob a spousty dalších.</p>
+
+<h2 id="toc_2">Nastavení pro použití subdomén lokálně</h2>
+
+<p>Pokusy s &#39;/etc/hosts&#39; mne dovedli k nepodpoře divočin jako *.localhost (wildcards) a dle všech mých poznatků prakticky nic nepodporuje divočejší věc s portem, to jest *.localhost:8080. Můj projekt se dynamicky měl rozhodovat na úrovni subdomén a protože nastavení několika testovacích subdomén natrvdo - typu &#39;test1.localhost&#39; - nebylo úplně košér, zvolil jsem trochu obtížnější cestu.</p>
+
+<h2 id="toc_3">DNS server dnsmasq a jeho nastavení</h2>
+
+<p>Nejdříve je třeba nainstalovat dnsmasq, takový lehčí dns server. Tahle věc by neměla nikoho trápit, je to jednoduše vypnutelný démon. Na Debianu stačí do konzole vystřelit:</p>
+<div class="highlight"><pre><code class="bash">sudo apt-get install dnsmasq
+</code></pre></div>
+<p>Tento server používá pro svou konfiguraci &#39;/etc/dnsmasq.conf&#39; a obsah &#39;/etc/dnsmasq.d/&#39;. Pro konfiguraci jsem přidal soubor &#39;localhost.conf&#39;, ale prakticky je to úplně jedno, hlavně ať ta následující kofigurace někde hnije:</p>
+<div class="highlight"><pre><code class="bash"><span class="c"># restrict dnsmasq to requests from localhost</span>
+listen-address<span class="o">=</span>127.0.0.1
+<span class="c"># 127.0.0.1 responds to requests coming from *.localhost</span>
+<span class="nv">address</span><span class="o">=</span>/localhost/127.0.0.1
+</code></pre></div>
+<p>Pro líné zadky by mělo stačit spustit toto:</p>
+<div class="highlight"><pre><code class="text">sudo echo -e \
+&#39;listen-address=127.0.0.1\naddress=/localhost/127.0.0.1&#39; &gt; /etc/dnsmasq.d/localhost.conf
+</code></pre></div>
+<p>Samozřejmě, pro jakoukoliv změnu by to chtělo restartovat (nebo nastartovat) server:</p>
+<div class="highlight"><pre><code class="text">sudo /etc/init.d/dnsmasq restart
+</code></pre></div>
+<p>Nyní, aby to všechno fungovalo, musí se donutit dhcp klient k tomu, aby to vůbec umožnil. V souboru &#39;/etc/dhcp/dhclient.conf&#39; je řádek, který je třeba odkomentovat (tj. umazat první znak &#39;#&#39; na tomto řádku):</p>
+<div class="highlight"><pre><code class="text">#prepend domain-name-servers 127.0.0.1;
+</code></pre></div>
+<p>No a nebo jen spustit:
+<code>
+sudo echo &#39;prepend domain-name-servers 127.0.0.1;&#39; &gt;&gt; /etc/dhcp/dhclient.conf
+</code></p>
+
+<p>Posledním krokem je trochu aktualizovat informace dhclient:</p>
+<div class="highlight"><pre><code class="bash">sudo dhclient
+</code></pre></div>
+<h2 id="toc_4">Povolit aplikaci běžet na portu 80</h2>
+
+<p>Zde už je trošku problém. Na Unix-like OS typicky jen privilegovaní uživatelé mohou nechat aplikaci naslouchat na portu 80 (přesněji na portech nižších než 1024). Při pokusu o puštění projektu tak vyskočí traceback s jasnou informací, &#39;Permission denied&#39;.</p>
+<div class="highlight"><pre><code class="text">(dev_env)prost@prost-VirtualBox:~/projects/secret_project$ dev_appserver.py --port 80 .
+...
+socket.error: [Errno 13] Permission denied
+</code></pre></div>
+<p>Je tak nutné pro nějakou binárku povolit tento port. Tohle v Debianu jde poměrně jednoduše, ale příchází problém druhý - pouze binárky. Skriptům to povolovat nelze, protože ve skutečnosti je pouštěna binárka, tj. typicky &#39;/usr/bin/python&#39;. To je potenciální bezpečnostní díra. Proč? Všechno, co použije python, může použít nejen port 80, ale všechny privilegované. To mi bylo celkem u zad, můj operační systém pro vývoj si kýchá ve virtuálním stroji, nebylo třeba se strachovat. Navíc pokud bylo vytvořeno Python prostředí pomocí virtualenv, povolení portu proběhne pro relativně izolované prostředí. Každopádně zakázat port 80 pro použití zvenčí na fyzickém stroji není zrovna špatný nápad.</p>
+
+<p>Otevírat porty pro aplikace umí utilita set capabilities naleznutelnou pod &#39;libcap2-bin&#39; v Debianu, copy &amp; paste instalace tu:</p>
+<div class="highlight"><pre><code class="text">sudo apt-get install libcap2-bin
+</code></pre></div>
+<p>Povolení se provádí způsobem níže, prakticky se nastaví v ACL cosi, co umožní pro tento soubor používat porty nižší než 1024.</p>
+<div class="highlight"><pre><code class="bash">sudo setcap <span class="s1">&#39;cap_net_bind_service=+ep&#39;</span> /path/to/binary
+</code></pre></div>
+<p>Následující příkaz pusťte jen v prostředí pythonu, který chcete používat pro běh aplikace na portu 80:</p>
+<div class="highlight"><pre><code class="bash">sudo setcap <span class="s1">&#39;cap_net_bind_service=+ep&#39;</span> <span class="k">$(</span>readlink -f <span class="k">$(</span>which python<span class="k">))</span>
+</code></pre></div>
+<p>Nyní je možné pustit vysněnou aplikaci se subdoménami na portu 80:</p>
+<div class="highlight"><pre><code class="bash">dev_appserver.py --port 80 .
+</code></pre></div>
+    </div>
+</div>
+<div id="additional">
+    <div class="article_content">
+        <div id="disqus_thread"></div>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <script type="text/javascript" src="/statics/jquery.min.js"></script>
+        <!--<script type="text/javascript" src="disqus.js"></script>-->
+        <script type="text/javascript">
+            var disqus_shortname = 'incloudscz'; // required: replace example with your forum shortname
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <script type="text/javascript">$(document).ready(prettyPrint);</script>
+    </div>
+</div>
+<div id="bottom">
+<p id="bottom_text"><a href="http://creativecommons.org/publicdomain/zero/1.0/legalcode">CC0 - Public domain</a>. Není-li uvedeno jinak, využijte obsah tohoto příspěvku dle svých potřeb bez omezení a do zblbnutí mysli.</p>
+</div>
+    </body>
+</html>
