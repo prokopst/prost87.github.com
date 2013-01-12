@@ -1,4 +1,6 @@
 pygments: true
 markdown: redcarpet
+redcarpet:
+  extensions: ["filter_html", "with_toc_data"]
 paginate: 10
 exclude: ["README.md"]
