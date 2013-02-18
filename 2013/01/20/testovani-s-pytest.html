@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="keywords" content="prost, blog, Stanislav Prokop" />
+        <title>inclouds.cz: Testování s py.test</title>
+        <link href='http://fonts.googleapis.com/css?family=PT+Serif:700' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="/statics/style.css">
+        <link rel="stylesheet" type="text/css" href="/statics/pygments.css">
+        <link rel="stylesheet" type="text/css" href="/statics/disqus_overload.css">
+    </head>
+    <body>
+        <div id="top">
+            <div id="image_logo">
+                <a href="http://inclouds.cz/"><img src="/statics/clouds.png" /></a>
+            </div>
+            <div id="image_wrapper">
+                <div id="logo">
+                    <a href="http://inclouds.cz">inclouds.cz</a>
+                </div>
+                <div id="menu">
+                    <a class="main_link" href="/">index</a>
+                    &nbsp;
+                    <a class="main_link" href="http://twitter.com/prost87/">twitter</a>
+                    &nbsp;
+                    <a class="main_link" href="http://www.linkedin.com/in/prost87">linkedin</a>
+                </div>
+            </div>
+            <div id="clear_both"></div>
+        </div>
+        <div id="content">
+    <div class="introduction">
+        <div class="header">
+            <h1>Testování s py.test</h1>
+            <p class="date">2013-01-20</p>
+        </div>
+        <div class="perex">
+            Samotný unittest v Pythonu dosud používá spousta lidí, přestože daleko pohodlnější je využít nástrojů jako py.test nebo nosetest. Trochy osvěty neuškodí.
+        </div>
+    </div>
+    <div class="article_content">
+        <p>Chyby se čas od času stanou a předem povídám - debugování nemám moc rád. A kdo pátrání po broukovi má rád, troufám si tvrdit, že je prvotřídní zvrhlík. Před ztrastiplným dobrodružstvím v debuggeru mne částečně dokáží ochránit testy. Testy, které pustím po každé důmyslnější změně (ať žíje commit hook!). Ale analýza pádu testu v čistém unittestu je tristní, čas od času se to neobejde bez odvšivovacího sezení. Nelze mu nic vyčítat, primitivita je daná jeho účelem. Pouštět testy bez zanesení větší komplexity do standardního balíku. Proč ne, funguje to. Ale proč vlastně ano, když jiné nástroje ve skutečnosti poskytují daleko <strong>větší pohodlí</strong>? Pokračujme něčím konkrétním.</p>
+
+<p>Zkusme si nějakou hloupou a účelovou ukázku pro toto neobjektivní a povrchní porovnání. Součástí této ukázky jsou dva testy:</p>
+
+<ul>
+<li><code>test_assertion</code> testující primitivní assert bez parametru message (typická situace v testech)</li>
+<li><code>test_recursion</code>, primitivní test špatné rekurze.</li>
+</ul>
+
+<p>Takto to celé vypadá:</p>
+<div class="highlight"><pre><code class="python"><span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="k">def</span> <span class="nf">recursion</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">recursion</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Test</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">test_assertion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span>
+
+    <span class="k">def</span> <span class="nf">test_recursion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">recursion</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="toc_0">Python unittest</h2>
+
+<p>Pouštění testů přes samotný unittest je jako v dnešní době jezdit na koni do práce. Pusťme si to. Stačí jedno magické <code>python -m unittest test.py</code> a uvidíte ten záchodový výstup. Vše začíná přehledem:</p>
+<div class="highlight"><pre><code class="text">FE
+</code></pre></div>
+<p>Zpracování testu, které spadlo na primitivní rekurzi, je pouze vtipem. Výstupem je výpis všech 965 volání sebe sama. Spuštění v terminálu nedoporučuji, přesměrujte standardní chybový výstup do souboru.</p>
+<div class="highlight"><pre><code class="text">======================================================================
+ERROR: test_recursion (test.Test)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File &quot;test.py&quot;, line 27, in test_recursion
+    recursion(1)
+  File &quot;test.py&quot;, line 4, in recursion
+    recursion(x)
+
+[...]
+[...]
+[...]
+
+  File &quot;test.py&quot;, line 4, in recursion
+    recursion(x)
+RuntimeError: maximum recursion depth exceeded
+</code></pre></div>
+<p>A úplně ten poslední, primitivní test? Ano, <code>AssertionError</code>. Ale nic víc. Vývojář se z logu nedozví, co obsahuje <code>a</code> a co obsahuje <code>b</code>. Použitelnost je znovu na bodu mrazu.</p>
+<div class="highlight"><pre><code class="text">======================================================================
+FAIL: test_assertion (test.Test)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File &quot;test.py&quot;, line 21, in test_assertion
+    assert a == b
+AssertionError
+</code></pre></div>
+<h2 id="toc_1">py.test</h2>
+
+<p>Nyní objevme py.test, nástroj, díky kterému má smysl zahodit pouštění testů skrze unittest. Nainstalujme si jej pomocí <code>pip install pytest</code> a pojďme se podívat, co on to vlastně umí na této primitivní ukázce v té úplně nejprimitivnější formě (žádné speciální formáty, nic). Ještě pro úplnost, nástroj se jmenuje <code>py.test</code> a balík je <code>pytest</code>. Nakolik to dává smysl je popsáno ve <a href="http://pytest.org/latest/faq.html#why-a-py-test-instead-of-a-pytest-command">FAQ</a>. Nejdříve pustění testu:</p>
+<div class="highlight"><pre><code class="bash">py.test test.py
+</code></pre></div>
+<p>Výstupem je taková standardní hlavička, která už se ovšem snaží trošku rozsvítit tu nudnou monotónnost barev, kterou tu nedodám.</p>
+<div class="highlight"><pre><code class="text">======================== test session starts =========================
+platform linux2 -- Python 2.7.3 -- pytest-2.3.4
+collected 3 items
+
+test.py FF
+
+============================== FAILURES ==============================
+</code></pre></div>
+<p>Prvním zpracovaným testem je test, který je první v souboru. A výstup, výstup je
+konečně použitelný. Obsahy proměnných v <code>assert</code> jsou vypsané.</p>
+<div class="highlight"><pre><code class="text">________________________ Test.test_assertion _________________________
+
+self = &lt;test.Test testMethod=test_assertion&gt;
+
+    def test_assertion(self):
+        a = 1
+        b = 2
+&gt;       assert a == b
+E       AssertionError: assert 1 == 2
+
+test.py:21: AssertionError
+</code></pre></div>
+<p>A jak dopadla rekurze? Už nevypíše 965 volání sebe sama, <code>py.test</code> zjistí
+rekurzi a test moudře zabije už po druhém zavolání.</p>
+<div class="highlight"><pre><code class="text">________________________ Test.test_recursion _________________________
+
+self = &lt;test.Test testMethod=test_recursion&gt;
+
+    def test_recursion(self):
+&gt;       recursion(1)
+
+test.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = 1
+
+    def recursion(x):
+&gt;       recursion(x)
+
+test.py:4: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = 1
+
+    def recursion(x):
+&gt;       recursion(x)
+
+test.py:4: 
+!!! Recursion detected (same locals &amp; position)
+</code></pre></div>
+<h1 id="toc_2">Závěr</h1>
+
+<p>Pouštění testů přes něco chytřejšího je menším utrpením a chyby lze pochopit daleko rychleji. Není nutné hned pouštět debug session kvůli unittestům. Alternativně lze použít <code>nosetest</code>, který původně vyšel z <code>py.test</code> (je to někde popsané ve FAQ).</p>
+
+    </div>
+</div>
+<div id="additional">
+    <div class="article_content">
+        <div id="disqus_thread"></div>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <script type="text/javascript" src="/statics/jquery.min.js"></script>
+        <!--<script type="text/javascript" src="disqus.js"></script>-->
+        <script type="text/javascript">
+            var disqus_shortname = 'incloudscz'; // required: replace example with your forum shortname
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <script type="text/javascript">$(document).ready(prettyPrint);</script>
+    </div>
+</div>
+<div id="bottom">
+<p id="bottom_text"><a href="http://creativecommons.org/publicdomain/zero/1.0/legalcode">CC0 - Public domain</a>. Není-li uvedeno jinak, využijte obsah tohoto příspěvku dle svých potřeb bez omezení a do zblbnutí mysli.</p>
+</div>
+    </body>
+</html>

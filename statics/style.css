@@ -166,3 +166,16 @@ h3, h4, h5 {
     margin-left: auto;
     margin-right: auto;
 }
+
+code {
+    border: 1px solid LightGray;
+}
+
+pre {
+    border: 1px solid LightGray;
+    padding: 0.5em;
+}
+
+pre > code {
+    border: 0px solid LightGray;
+}
